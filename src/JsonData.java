@@ -94,13 +94,6 @@ public class JsonData
 		{
 			e.printStackTrace();
 		}
-
-//		File file = new File(outPath + "dictData.dat");
-//		if ((file.isFile()) && (file.exists()))
-//		{
-//			file.delete();
-//		}
-//		System.out.println("删除文件：" + outPath + "dictData" + type + ".dat");
 	}
 
 	/**
@@ -135,7 +128,6 @@ public class JsonData
 
 	/**
 	 * 获取连接
-	 * 
 	 * @return
 	 * @throws Exception
 	 */

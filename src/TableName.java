@@ -12,25 +12,32 @@ import java.util.Properties;
 
 public class TableName
 {
+	/** 数据库IP地址 */
 	private static String dBIp;
+	/** 数据库名称 */
 	private static String dBName = "";
-	private static String outPath = "";
+	/** 用户名 */
+	private static String uname = "";
+	/** 密码 */
+	private static String pwd = "";
 
 
+	/**
+	 * 入口
+	 */
 	public static void main(String[] args) throws Exception
 	{
 		Properties prop = new Properties();
 
-		String confiFile = System.getProperty("user.dir") + "/dictData.properties";
+		String confiFile = System.getProperty("user.dir") + "/tableToClass.properties";
 		System.out.println("设置文件：" + confiFile);
 		InputStream in = new BufferedInputStream(new FileInputStream(confiFile));
 
 		prop.load(in);
 		dBIp = prop.getProperty("dBIp").trim();
 		dBName = prop.getProperty("dBName").trim();
-		outPath = prop.getProperty("outPath").trim();
-
-		System.out.println("生成路径：" + outPath);
+		uname = prop.getProperty("uname").trim();
+		pwd = prop.getProperty("pwd").trim();
 
 		Hashtable<String, String> tableMap = getTableInfo();
 		Iterator<String> tableNames = tableMap.keySet().iterator();
@@ -44,13 +51,23 @@ public class TableName
 		System.out.println("全部生成完成!");
 	}
 	
+	/**
+	 * 获取连接
+	 * @return
+	 * @throws Exception
+	 */
 	private static Connection getMySQLConnection() throws Exception
 	{
 		Class.forName("com.mysql.jdbc.Driver");
-		Connection conn = DriverManager.getConnection("jdbc:mysql://" + dBIp + ":3306/" + dBName, "root", "root");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://" + dBIp + ":3306/" + dBName, uname, pwd);
 		return conn;
 	}
 
+	/**
+	 * 获取表名
+	 * @return
+	 * @throws Exception
+	 */
 	private static Hashtable<String, String> getTableInfo() throws Exception
 	{
 		Hashtable<String, String> tableMap = new Hashtable<String, String>();
