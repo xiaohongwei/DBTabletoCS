@@ -1,6 +1,4 @@
-
-
-import java.io.BufferedInputStream;
+﻿import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,206 +21,282 @@ import org.json.JSONArray;
 
 public class JsonData
 {
-  private static String dBIp = "";
-  private static String dBName = "";
-  private static String outPath = "";
-  private static JSONArray jsonArr = new JSONArray();
-  
-  private static Properties prop = new Properties();
+	/** 数据库IP地址 */
+	private static String dBIp;
+	/** 数据库名称 */
+	private static String dBName = "";
+	/** 用户名 */
+	private static String uname = "";
+	/** 密码 */
+	private static String pwd = "";
+	/** 输出路径 */
+	private static String outPath = "";
+	/** Cs文件名称类型 */
+	private static String outTableNameType = "";
+	/** Cs文件名称类型 */
+	private static String outJsonType = "";
+	/** 不生成的表 */
+	private static String tables = "";
 
-  public static void main(String[] args)throws Exception
-  {
-    String confiFile = System.getProperty("user.dir") + "/jsonData.properties";
-    System.out.println("�����ļ���" + confiFile);
-    InputStream in = new BufferedInputStream(new FileInputStream(confiFile));
-    try {
-      prop.load(in);
-      dBIp = prop.getProperty("dBIp").trim();
-      dBName = prop.getProperty("dBName").trim();
-      outPath = prop.getProperty("outPath").trim();
+	private static JSONArray jsonArr = new JSONArray();
 
-      System.out.println("����·����" + outPath);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    crtJosn(1);
-    jsonArr = new JSONArray();
-    crtJosn(2);
-  }
-  
-  
-  
-  
-  public static void crtJosn(int type)
-  {
-	try
+	public static void main(String[] args) throws Exception
 	{
-	  Hashtable tableMap = getTableInfo();
-      Iterator tableNames = tableMap.keySet().iterator();
+		String confiFile = System.getProperty("user.dir") + "/jsonData.properties";
 
-      while (tableNames.hasNext())
-      {
-        String table = (String)tableNames.next();
-        if (table.indexOf("Log_") != -1)
-          continue;
-        
-        String no_tables = prop.getProperty("no_tables");
-        if (no_tables.indexOf( ","+table.replaceAll("_", "")+",")!=-1 )
-            continue;
-        
-        try
-        {
-          if ((isUseTable(table)==true && type==1)  || (isUseTable(table)==false && type==2))
-          {
-	          System.out.println("���ɱ�:" + table);
-	          getJson(table, (String)tableMap.get(table));
-          }
-        }
-        catch (Exception e)
-        {
-          e.printStackTrace();
-        }
+		Properties prop = new Properties();
+		InputStream in = new BufferedInputStream(new FileInputStream(confiFile));
+		prop.load(in);
 
-      }
+		dBIp = prop.getProperty("dBIp").trim();
+		dBName = prop.getProperty("dBName").trim();
+		uname = prop.getProperty("uname").trim();
+		pwd = prop.getProperty("pwd").trim();
+		outPath = prop.getProperty("outPath").trim();
+		outTableNameType = prop.getProperty("outTableNameType").trim();
+		outJsonType = prop.getProperty("outJsonType").trim();
+		tables = prop.getProperty("tables").trim();
 
-      geneFile(jsonArr.toString(), outPath, "dictData"+type+".dict");
+		System.out.println("设置文件：" + confiFile);
+		System.out.println("生成路径：" + outPath);
 
-      System.out.println("ȫ���������!");
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
+		crtJosn();
+		
+		Runtime.getRuntime().exec("cmd.exe /k explorer.exe "+outPath.replaceAll("\\/", "\\\\"));
+	}
 
-    File file = new File(outPath + "dictData"+type+".dat");
-    if ((file.isFile()) && (file.exists())) {
-      file.delete();
-    }
-    System.out.println("ɾ���ļ���" + outPath + "dictData"+type+".dat");
-  }
-  
-  
-  
-  
-  public static boolean isUseTable(String name)
-  {
-    String[] str = prop.getProperty("tables").split(",");
-    for (int i = 0; i < str.length; i++)
-    {
-      if (str[i].replaceAll("_", "").equals(name.replaceAll("_", ""))) {
-        return true;
-      }
-    }
-    return false;
-  }
+	/**
+	 * 生成json数据
+	 * @param type
+	 */
+	public static void crtJosn()
+	{
+		try
+		{
+			Hashtable<String, String> tableMap = getTableInfo();
+			Iterator<?> tableNames = tableMap.keySet().iterator();
 
-  private static Connection getMySQLConnection()
-    throws Exception
-  {
-    Class.forName("com.mysql.jdbc.Driver");
-    Connection conn = DriverManager.getConnection("jdbc:mysql://" + dBIp + ":3306/" + dBName, "root", "root");
-    return conn;
-  }
+			while (tableNames.hasNext())
+			{
+				String table = (String) tableNames.next();
+				
+				if(isUseTable(table))
+				{
+					System.out.println("生成表:" + table);
+					getJson(table,getClassColumnName(table));
+				}
+			}
 
-  private static Hashtable getTableInfo()
-    throws Exception
-  {
-    Hashtable tableMap = new Hashtable();
-    String sql = "SELECT table_name ,TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE table_schema = '" + dBName + "'";
-    Statement statement = getMySQLConnection().createStatement();
-    for (ResultSet rs = statement.executeQuery(sql); rs.next(); tableMap.put(rs.getString("table_name"), rs.getString("TABLE_COMMENT")));
-    return tableMap;
-  }
+			geneFile(jsonArr.toString(), outPath, "jsonData.dict");
 
-  private static void getJson(String tableName, String tableCommon)
-    throws Exception
-  {
-    String sqlstString = "select * from " + tableName;
-    Statement statement2 = getMySQLConnection().createStatement();
-    ResultSet rs2 = statement2.executeQuery(sqlstString);
-    ResultSetMetaData data = rs2.getMetaData();
+			System.out.println("全部生成完成!");
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 
-    while (rs2.next())
-    {
-      Map mp = new HashMap();
+//		File file = new File(outPath + "dictData.dat");
+//		if ((file.isFile()) && (file.exists()))
+//		{
+//			file.delete();
+//		}
+//		System.out.println("删除文件：" + outPath + "dictData" + type + ".dat");
+	}
 
-      for (int i = 1; i <= data.getColumnCount(); i++)
-      {
-        String columnName = data.getColumnName(i);
+	/**
+	 * 表是否生成
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static boolean isUseTable(String name)
+	{
+		// 类型 1生成tables表 2不生成tables表
+		if (outJsonType.equals("1"))
+		{
+			String[] str = tables.split(",");
+			for (int i = 0; i < str.length; i++)
+			{
+				if (str[i].equals(name))
+					return true;
+			}
+			return false;
+		} else
+		{
+			String[] str = tables.split(",");
+			for (int i = 0; i < str.length; i++)
+			{
+				if (str[i].equals(name))
+					return false;
+			}
+			return true;
+		}
+	}
 
-        String columnClassName = data.getColumnClassName(i);
+	/**
+	 * 获取连接
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private static Connection getMySQLConnection() throws Exception
+	{
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://" + dBIp + ":3306/" + dBName, uname, pwd);
+		return conn;
+	}
 
-        Object value = rs2.getString(columnName);
-        if (columnClassName == "java.lang.Long")
-        {
-          if (value == null) {
-            value = "0";
-          }
-          value = Long.parseLong(value+"");
-        }
-        else if (columnClassName == "java.lang.Double")
-        {
-          if (value == null) {
-            value = "0";
-          }
-          value = Double.parseDouble(value+"");
-        }
-        else if (columnClassName == "java.lang.Integer")
-        {
-          if (value == null) {
-            value = "0";
-          }
-          value = Integer.parseInt(value+"");
-        }
+	/**
+	 * 获取表名
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private static Hashtable<String, String> getTableInfo() throws Exception
+	{
+		Hashtable<String, String> tableMap = new Hashtable<String, String>();
+		String sql = "SELECT table_name ,TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE table_schema = '" + dBName + "'";
+		Statement statement = getMySQLConnection().createStatement();
+		ResultSet rs = statement.executeQuery(sql);
 
-        if (columnName.equals("className"))
-          mp.put(columnName, tableName.replaceAll("_", ""));
-        else {
-          mp.put(columnName, value);
-        }
+		while (rs.next())
+		{
+			tableMap.put(rs.getString("table_name"), rs.getString("TABLE_COMMENT"));
+		}
+		return tableMap;
+	}
 
-      }
+	private static void getJson(String tableName, String className) throws Exception
+	{
+		String sqlstString = "select * from " + tableName;
+		Statement statement2 = getMySQLConnection().createStatement();
+		ResultSet rs2 = statement2.executeQuery(sqlstString);
+		ResultSetMetaData data = rs2.getMetaData();
 
-      jsonArr.put(mp);
-    }
-  }
+		while (rs2.next())
+		{
+			Map<String, Object> mp = new HashMap<String, Object>();
 
-  private static void geneFile(String content, String filePath, String fileName)
-    throws Exception
-  {
-    BufferedWriter bw = null;
-    try
-    {
-      createDir(filePath);
-      bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(createFile(filePath + fileName)), "utf-8"));
-      bw.write(content);
-      bw.flush();
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-    bw.close();
-  }
+			for (int i = 1; i <= data.getColumnCount(); i++)
+			{
+				String columnName = data.getColumnName(i);
 
-  private static void createDir(String path)
-  {
-    File dict = new File(path);
-    if (!dict.exists())
-      dict.mkdirs();
-  }
+				String columnClassName = data.getColumnClassName(i);
 
-  private static File createFile(String filePath)
-  {
-    File file = new File(filePath);
-    if (!file.exists())
-      try {
-        file.createNewFile();
-      } catch (IOException e) {
-        e.printStackTrace();
-        return null;
-      }
-    return file;
-  }
+				Object value = rs2.getString(columnName);
+				if (columnClassName == "java.lang.Long")
+				{
+					if (value == null)
+					{
+						value = "0";
+					}
+					value = Long.parseLong(value + "");
+				} else if (columnClassName == "java.lang.Double")
+				{
+					if (value == null)
+					{
+						value = "0";
+					}
+					value = Double.parseDouble(value + "");
+				} else if (columnClassName == "java.lang.Integer")
+				{
+					if (value == null)
+					{
+						value = "0";
+					}
+					value = Integer.parseInt(value + "");
+				}
+
+				if (columnName.equals("className"))
+					mp.put(columnName, className);
+				else
+					mp.put(columnName, value);
+			}
+
+			jsonArr.put(mp);
+		}
+	}
+
+	/**
+	 * 写入文件
+	 * 
+	 * @param content
+	 * @param filePath
+	 * @param fileName
+	 * @throws Exception
+	 */
+	private static void geneFile(String content, String filePath, String fileName) throws Exception
+	{
+		createDir(filePath);
+
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(createFile(filePath + fileName)), "utf-8"));
+		bw.write(content);
+		bw.flush();
+		bw.close();
+	}
+
+	/**
+	 * 创建目录
+	 * 
+	 * @param path
+	 */
+	private static void createDir(String path)
+	{
+		File dict = new File(path);
+		if (!dict.exists())
+			dict.mkdirs();
+	}
+
+	/**
+	 * 创建文件
+	 * 
+	 * @param filePath
+	 * @return
+	 */
+	private static File createFile(String filePath)
+	{
+		File file = new File(filePath);
+		if (!file.exists())
+			try
+			{
+				file.createNewFile();
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+				return null;
+			}
+		return file;
+	}
+	
+	/**
+	 * 文件名
+	 * @param name
+	 * @return
+	 */
+	private static String getClassColumnName(String name)
+	{
+		// 1为文件名跟表名一样  2标准命名规则（DictUserInfo）
+		if(outTableNameType.equals("1"))
+			return name;
+		else
+		{
+			String string = name;
+			int ix = name.indexOf("_");
+			if (ix >= 0)
+			{
+				String[] strs = name.split("_");
+				String className = "";
+				String[] as;
+				int j = (as = strs).length;
+				for (int i = 0; i < j; i++)
+				{
+					String s = as[i];
+					className = className + s;
+				}
+	
+				string = className;
+			}
+			return string.substring(0, 1).toUpperCase() + string.substring(1);
+		}
+	}
 }

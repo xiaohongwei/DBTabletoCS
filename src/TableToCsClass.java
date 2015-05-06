@@ -1,4 +1,4 @@
-import java.io.BufferedInputStream;
+ï»¿import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,29 +16,31 @@ import java.util.Properties;
 
 public class TableToCsClass
 {
-	/** Êı¾İ¿âIPµØÖ·*/
+	/** æ•°æ®åº“IPåœ°å€*/
 	private static String dBIp;
-	/** Êı¾İ¿âÃû³Æ*/
+	/** æ•°æ®åº“åç§°*/
 	private static String dBName = "";
-	/** ÓÃ»§Ãû*/
+	/** ç”¨æˆ·å*/
 	private static String uname = "";
-	/** ÃÜÂë*/
+	/** å¯†ç */
 	private static String pwd = "";
-	/** Êä³öÂ·¾¶*/
+	/** è¾“å‡ºè·¯å¾„*/
 	private static String outPath = "";
-	/** CsÎÄ¼şÃû³ÆÀàĞÍ*/
+	/** Csæ–‡ä»¶åç§°ç±»å‹*/
 	private static String outCsType = "";
-	/** ²»Éú³ÉµÄ±í*/
-	private static String no_tables = "";
+	/** ä¸ç”Ÿæˆçš„è¡¨*/
+	private static String outType = "";
+	/** ä¸ç”Ÿæˆçš„è¡¨*/
+	private static String tables = "";
 
 	/**
-	 * ÔËĞĞÈë¿Ú
+	 * è¿è¡Œå…¥å£
 	 * @param args
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception
 	{
-		String confiFile = System.getProperty("user.dir") + "/dictData.properties";
+		String confiFile = System.getProperty("user.dir") + "/tableToClass.properties";
 		
 		Properties prop = new Properties();
 		InputStream in = new BufferedInputStream(new FileInputStream(confiFile));
@@ -50,10 +52,11 @@ public class TableToCsClass
 		pwd = prop.getProperty("pwd").trim();
 		outPath = prop.getProperty("outPath").trim();
 		outCsType = prop.getProperty("outCsType").trim();
-		no_tables = prop.getProperty("no_tables").trim();
+		outType = prop.getProperty("outType").trim();
+		tables = prop.getProperty("tables").trim();
 
-		System.out.println("ÉèÖÃÎÄ¼ş£º" + confiFile);
-		System.out.println("Éú³ÉÂ·¾¶£º" + outPath);
+		System.out.println("è®¾ç½®æ–‡ä»¶ï¼š" + confiFile);
+		System.out.println("ç”Ÿæˆè·¯å¾„ï¼š" + outPath);
 
 		delAll(new File(outPath + "/dictData"));
 		delAll(new File(outPath + "/constData"));
@@ -65,13 +68,13 @@ public class TableToCsClass
 		while (tableNames.hasNext())
 		{
 			String table = (String) tableNames.next();
-			if (table.indexOf("Log_") != -1) // ºöÂÔÈÕÖ¾
+			if (table.indexOf("Log_") != -1) // å¿½ç•¥æ—¥å¿—
 				continue;
 
 			if (!isNotUseTable(table))
 				continue;
 
-			System.out.println("Éú³É±í:" + table);
+			System.out.println("ç”Ÿæˆè¡¨:" + table);
 			try
 			{
 				getASBean(table, (String) tableMap.get(table));
@@ -80,12 +83,12 @@ public class TableToCsClass
 			
 		}
 
-		System.out.println("È«²¿Éú³ÉÍê³É!");
+		System.out.println("å…¨éƒ¨ç”Ÿæˆå®Œæˆ!");
 		Runtime.getRuntime().exec("cmd.exe /k explorer.exe "+outPath.replaceAll("\\/", "\\\\"));
 	}
 
 	/**
-	 * »ñÈ¡Á¬½Ó
+	 * è·å–è¿æ¥
 	 * @return
 	 * @throws Exception
 	 */
@@ -97,13 +100,13 @@ public class TableToCsClass
 	}
 
 	/**
-	 * ÎÄ¼şÃû
+	 * æ–‡ä»¶å
 	 * @param name
 	 * @return
 	 */
 	private static String getClassColumnName(String name)
 	{
-		// 1ÎªÎÄ¼şÃû¸ú±íÃûÒ»Ñù  2±ê×¼ÃüÃû¹æÔò£¨DictUserInfo£©
+		// 1ä¸ºæ–‡ä»¶åè·Ÿè¡¨åä¸€æ ·  2æ ‡å‡†å‘½åè§„åˆ™ï¼ˆDictUserInfoï¼‰
 		if(outCsType.equals("1"))
 			return name;
 		else
@@ -129,7 +132,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * »ñÈ¡±íÃû
+	 * è·å–è¡¨å
 	 * @return
 	 * @throws Exception
 	 */
@@ -149,7 +152,7 @@ public class TableToCsClass
 
 	
 	/**
-	 * Éú³É¾²Ì¬Àà
+	 * ç”Ÿæˆé™æ€ç±»
 	 * @param tableName
 	 * @param tableCommon
 	 * @throws Exception
@@ -204,7 +207,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * Éú³ÉÀàÎÄ¼ş
+	 * ç”Ÿæˆç±»æ–‡ä»¶
 	 * @param tableName
 	 * @param tableCommon
 	 * @throws Exception
@@ -236,7 +239,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * »ñµÃÎÄ¼şÃû
+	 * è·å¾—æ–‡ä»¶å
 	 * @param content
 	 * @param fileName
 	 * @param type
@@ -261,7 +264,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * Ğ´ÈëÎÄ¼ş
+	 * å†™å…¥æ–‡ä»¶
 	 * @param content
 	 * @param filePath
 	 * @param fileName
@@ -278,7 +281,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * ´´½¨Ä¿Â¼
+	 * åˆ›å»ºç›®å½•
 	 * @param path
 	 */
 	private static void createDir(String path)
@@ -289,7 +292,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * ´´½¨ÎÄ¼ş
+	 * åˆ›å»ºæ–‡ä»¶
 	 * @param filePath
 	 * @return
 	 */
@@ -309,7 +312,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * ÀàĞÍ×ª»»
+	 * ç±»å‹è½¬æ¢
 	 * @param type
 	 * @return
 	 */
@@ -355,7 +358,7 @@ public class TableToCsClass
 	}
 
 	/**
-	 * É¾³ıÎÄ¼ş
+	 * åˆ é™¤æ–‡ä»¶
 	 * @param f
 	 * @throws IOException
 	 */
@@ -376,25 +379,36 @@ public class TableToCsClass
 
 			rslt = f.delete();
 			if (!rslt)
-				throw new IOException("ÎŞ·¨É¾³ı:" + f.getName());
+				throw new IOException("æ— æ³•åˆ é™¤:" + f.getName());
 		}
 	}
 
 	/**
-	 * ²»Éú³ÉµÄ±í
+	 * ä¸ç”Ÿæˆçš„è¡¨
 	 * @param name
 	 * @return
 	 */
 	public static boolean isNotUseTable(String name)
 	{
-		String[] str = no_tables.split(",");
-		for (int i = 0; i < str.length; i++)
+		// ç±»å‹ 1ç”Ÿæˆtablesè¡¨ 2ä¸ç”Ÿæˆtablesè¡¨
+		if (outType.equals("1"))
 		{
-			if (str[i].equals(name))
+			String[] str = tables.split(",");
+			for (int i = 0; i < str.length; i++)
 			{
-				return false;
+				if (str[i].equals(name))
+					return true;
 			}
+			return false;
+		} else
+		{
+			String[] str = tables.split(",");
+			for (int i = 0; i < str.length; i++)
+			{
+				if (str[i].equals(name))
+					return false;
+			}
+			return true;
 		}
-		return true;
 	}
 }
