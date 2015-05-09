@@ -19,6 +19,13 @@ import java.util.Properties;
 
 import org.json.JSONArray;
 
+/**
+ * 该工具是把数据库的数据生成 josn数据格式的文件。<br/>
+ * 注：className 是做一个对应标示,对应的是那张表。一般用于转换为对象时使用
+ * 
+ * @author benbear
+ * @version 1.0
+ */
 public class JsonData
 {
 	/** 数据库IP地址 */
@@ -37,9 +44,14 @@ public class JsonData
 	private static String outJsonType = "";
 	/** 不生成的表 */
 	private static String tables = "";
-
+	/** josn数据*/
 	private static JSONArray jsonArr = new JSONArray();
 
+	/**
+	 * 程序入口
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception
 	{
 		String confiFile = System.getProperty("user.dir") + "/jsonData.properties";
@@ -98,8 +110,7 @@ public class JsonData
 
 	/**
 	 * 表是否生成
-	 * 
-	 * @param name
+	 * @param name 表名
 	 * @return
 	 */
 	public static boolean isUseTable(String name)
@@ -140,8 +151,7 @@ public class JsonData
 
 	/**
 	 * 获取表名
-	 * 
-	 * @return
+	 * @return 
 	 * @throws Exception
 	 */
 	private static Hashtable<String, String> getTableInfo() throws Exception
@@ -158,6 +168,12 @@ public class JsonData
 		return tableMap;
 	}
 
+	/**
+	 * 获取json
+	 * @param tableName 表名
+	 * @param className 类型(对象名称)
+	 * @throws Exception
+	 */
 	private static void getJson(String tableName, String className) throws Exception
 	{
 		String sqlstString = "select * from " + tableName;
@@ -199,11 +215,10 @@ public class JsonData
 					value = Integer.parseInt(value + "");
 				}
 
-				if (columnName.equals("className"))
-					mp.put(columnName, className);
-				else
-					mp.put(columnName, value);
+				mp.put(columnName, value);
 			}
+			
+			mp.put("className", className);
 
 			jsonArr.put(mp);
 		}
@@ -211,10 +226,9 @@ public class JsonData
 
 	/**
 	 * 写入文件
-	 * 
-	 * @param content
-	 * @param filePath
-	 * @param fileName
+	 * @param content 内容
+	 * @param filePath 路径
+	 * @param fileName 文件名
 	 * @throws Exception
 	 */
 	private static void geneFile(String content, String filePath, String fileName) throws Exception
@@ -229,8 +243,7 @@ public class JsonData
 
 	/**
 	 * 创建目录
-	 * 
-	 * @param path
+	 * @param path 路径
 	 */
 	private static void createDir(String path)
 	{
@@ -241,8 +254,7 @@ public class JsonData
 
 	/**
 	 * 创建文件
-	 * 
-	 * @param filePath
+	 * @param filePath 文件路径
 	 * @return
 	 */
 	private static File createFile(String filePath)

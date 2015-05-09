@@ -10,6 +10,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
+/**
+ * 该工具是获取到数据库里的所有表名
+ * 
+ * @author benbear
+ * @version 1.0
+ */
 public class TableName
 {
 	/** 数据库IP地址 */

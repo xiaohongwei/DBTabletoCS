@@ -14,6 +14,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
+/**
+ * 该工具是把数据库的表结构生成 .Cs 数据类文件。<br/>
+ *
+ * @author benbear
+ * @version 1.0
+ */
 public class TableToCsClass
 {
 	/** 数据库IP地址*/
@@ -180,6 +186,7 @@ public class TableToCsClass
 			String colName = rs.getString("COLUMN_NAME");
 			if ((tableName.equals("Dict_Cn")) || (tableName.equals("Dict_GameConfig")) || (!colName.equals("sname")))
 				continue;
+			
 			sBuffer.append("\tpublic  class " + newTableName + "{\n\n");
 			String sqlstString = "select * from " + tableName;
 			Statement statement2 = getMySQLConnection().createStatement();
@@ -225,16 +232,18 @@ public class TableToCsClass
 			String colName = rs.getString("COLUMN_NAME");
 			String colType = rs.getString("DATA_TYPE");
 			String colComm = rs.getString("COLUMN_COMMENT");
+			
 			if ((colName.equals("id")) || (colName.equals("className")))
 				continue;
+			
 			sBuffer.append("\t\t/** " + colComm + " */\n");
-
 			sBuffer.append("\t\tpublic " + getCSType(colType) + " " + colName + " {get;set;} " + "\n\n");
 		}
 
 		sBuffer.append("\t\tpublic " + getClassColumnName(tableName) + "(){\n");
 		sBuffer.append("\t}\n");
 		sBuffer.append("}\n");
+		
 		getFile(sBuffer.toString(), getClassColumnName(tableName), "cs");
 	}
 
